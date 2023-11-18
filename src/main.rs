@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use clap::Parser;
 use futures_util::StreamExt;
+use ignore::Walk;
 use normalize_path::NormalizePath;
 use quinn::{ClientConfig, Connection, Endpoint, EndpointConfig, ServerConfig, TokioRuntime};
 use rcgen::generate_simple_self_signed;
@@ -16,7 +17,6 @@ use std::{
 	sync::Arc,
 };
 use tokio::{io::AsyncWriteExt, spawn};
-use walkdir::WalkDir;
 
 const CONCURRENCY: usize = 100;
 const MAX_FILE_SIZE: usize = u32::MAX as _;
@@ -274,13 +274,13 @@ pub async fn initiate_conn(endpoint: &Endpoint, remote: SocketAddr) -> Result<Co
 }
 
 pub async fn send(conn: Connection, base_path: &Path) -> Result<()> {
-	let walkdir = WalkDir::new(base_path);
+	let walkdir = Walk::new(base_path);
 
 	futures_util::stream::iter(walkdir)
 		.for_each_concurrent(Some(CONCURRENCY), |item| async {
 			let mut send = conn.open_uni().await.unwrap();
 			if let Ok(direntry) = item {
-				let file_type = direntry.file_type();
+				let file_type = direntry.file_type().unwrap();
 				if file_type.is_file() {
 					let path = direntry.path();
 					let contents = tokio::fs::read(&path).await.unwrap();

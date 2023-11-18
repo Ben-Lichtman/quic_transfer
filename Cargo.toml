@@ -7,6 +7,7 @@ edition = "2021"
 anyhow = "1.0.75"
 clap = { version = "4.4.8", features = ["derive"] }
 futures-util = "0.3.29"
+ignore = "0.4.20"
 normalize-path = "0.2.1"
 postcard = { version = "1.0.8", default-features = false, features = ["alloc"] }
 quinn = "0.10.2"
@@ -16,7 +17,6 @@ serde = "1.0.192"
 thiserror = "1.0.50"
 tokio = { version = "1.34.0", features = ["full"] }
 tokio-stream = "0.1.14"
-walkdir = "2.4.0"
 webpki-roots = "0.25.2"
 
 [profile.release]
