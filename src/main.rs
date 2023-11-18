@@ -23,8 +23,8 @@ const MAX_FILE_SIZE: usize = u32::MAX as _;
 
 #[derive(Serialize, Deserialize)]
 enum Message<'a> {
-	Directory { path: PathBuf },
-	FileContents { path: PathBuf, contents: &'a [u8] },
+	Directory { path: &'a Path },
+	FileContents { path: &'a Path, contents: &'a [u8] },
 }
 
 /// Ignores server certificates
@@ -284,7 +284,7 @@ pub async fn send(conn: Connection, base_path: &Path) -> Result<()> {
 				if file_type.is_file() {
 					let path = direntry.path();
 					let contents = tokio::fs::read(&path).await.unwrap();
-					let path = path.strip_prefix(base_path).unwrap().to_owned();
+					let path = path.strip_prefix(base_path).unwrap();
 					let message = Message::FileContents {
 						path,
 						contents: &contents,
@@ -294,7 +294,7 @@ pub async fn send(conn: Connection, base_path: &Path) -> Result<()> {
 				}
 				else if file_type.is_dir() {
 					let path = direntry.path();
-					let path = path.strip_prefix(base_path).unwrap().to_owned();
+					let path = path.strip_prefix(base_path).unwrap();
 					let message = Message::Directory { path };
 					let data = postcard::to_allocvec(&message).unwrap();
 					send.write_all(&data).await.unwrap();
